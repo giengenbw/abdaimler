@@ -1,0 +1,128 @@
+# ============================================================
+# Company confidential input files
+# Do not commit real orders, confirmations, prices or exports
+# ============================================================
+
+# PDF
+*.pdf
+
+# Excel
+*.xls
+*.xlsx
+*.xlsm
+*.xlsb
+~$*.xls
+~$*.xlsx
+~$*.xlsm
+
+# Office documents
+*.doc
+*.docx
+*.ppt
+*.pptx
+
+# Archives, which may contain confidential documents
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# ============================================================
+# Generated reports and local results
+# ============================================================
+
+report.*
+Report.*
+AB_Check_Report.*
+*_ZH.html
+*_DE.html
+*_report.json
+*_report.csv
+*_report.html
+*.log
+
+# Local confidential working directories
+private_input/
+private_output/
+input/
+output/
+reports/
+ocr_output/
+temp/
+tmp/
+
+# Keep explicitly approved, fully anonymized test fixtures if needed
+# Add them with an exception only after a privacy review, for example:
+# !test_data/anonymized_example.pdf
+
+# ============================================================
+# Python
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ============================================================
+# IDE and editor settings
+# ============================================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# Operating system files
+# ============================================================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Environment variables, credentials and local configuration
+# ============================================================
+
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+secrets.*
+credentials.*
+
+# ============================================================
+# OCR and extraction temporary files
+# ============================================================
+
+*.ocr.pdf
+*_ocr.pdf
+*.txt.tmp
+*.json.tmp
+*.csv.tmp

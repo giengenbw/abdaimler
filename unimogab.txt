@@ -1,0 +1,774 @@
+# 任务：适用于未来所有 Unimog 项目的 Bestellung 与供应商 AB 中德文复核
+
+请进入编程协作模式。本提示词末尾内嵌了完整 Python 程序。我只会另外上传两份 PDF，分别为任意 Unimog 项目的我方采购订单（Bestellung）和供应商订单确认（Auftragsbestätigung，AB）。不要要求我再次上传 Python 文件，不要仅凭文件名判断 PDF 类型。
+
+收到两份 PDF 后，直接读取、识别、运行程序、人工复核并交付结果。无需询问我是否运行程序或是否生成文件。资料不足时必须写“未找到/无法确认”，不得猜测。
+
+本提示词必须可重复用于未来不同年份、不同国家、不同客户、不同 Unimog 型号、不同数量和不同 Daimler Truck/Mercedes-Benz 文件版式。不得沿用上一次项目中的车型、数量、价格、Code、国家、城市、供应商 AB 号、订单号、日期或结论。所有事实必须从本次上传的两份 PDF 重新提取和验证。
+
+通用适用范围：
+
+- 于其他现有或未来 Unimog 型号；
+- 不预设任何固定数量；
+- 不预设任何国家、地点和 Incoterm；
+- 不预设 OM934、3850 mm、170 kW、Michelin、Y95、ULFE 或任何固定配置；
+- 不预设文件语言，兼容德语、英语以及德英混合文件；
+- 不把历史项目中的已知差异复制到新项目；
+- 示例只用于说明判断方法，不得当作新项目事实。
+
+## 一、文件身份与原始材料保护
+
+1. 根据 PDF 标题、发出方、Purchaser/Buyer、Order、Order-confirmation、订单字段和正文内容识别哪份是 Bestellung、哪份是 AB，不得仅凭文件名判断。
+2. 如无法可靠区分，说明原因，不得强行指定。
+3. 记录文件名、页数和逐页文字提取情况，检查扫描页、缺页、乱码、文字层不完整、表格错行、页眉字段错位和 OCR 混淆风险。
+4. 不修改用户上传的 PDF。
+5. 页码统一采用 PDF 实际页序。印刷页码与 PDF 页序不同时，必须特别说明。
+6. 先将下方代码完整保存为 `unimog_ab_checker.py`。如果复制后出现 `&lt;`、`&gt;`、`&amp;` 等 HTML 实体，先保留原始留档文件，再创建运行副本，仅恢复 HTML 实体，并在报告中记录。
+
+## 二、程序执行要求
+
+1. 检查 Python 语法，以及 `pdfplumber`、`pandas`、`openpyxl` 依赖。
+2. 环境允许时安装缺少的依赖。
+3. 以识别出的 Bestellung 和 AB 为参数实际运行程序，不得只阅读代码。
+4. 如程序报错，记录完整报错、发生阶段和影响。不得把“脚本已启动”写成“检查已完成”。
+5. 程序无法运行时，继续依据 PDF 原文人工复核，但不得虚构程序输出、JSON、Excel、HTML 或测试结果。
+6. 程序成功后，实际读取 JSON 和 Excel，检查输出内容与 PDF 是否一致。
+7. 不得为获得“通过”结果而修改 PDF、输入顺序或比较结果。
+8. 如需修复程序缺陷，保留原版，另存新版本，说明原因和修改范围，并实际重跑。
+
+## 三、Unimog 专项核查
+
+必须逐项核对，并为关键结论提供 Bestellung 页码、AB 页码和双方简短原文：
+
+### 1. 文件关联与商务范围
+
+- 我方采购订单号，特别检查 4500 开头编号；
+- 供应商 AB 号，不得与我方 4500 开头订单号混淆；
+- 项目号、客户、国家、车辆批次；
+- 车型与产品系列，不预设具体型号；兼容如 U 219、U 319、U 423、U 427、U 435、U 527、U 535、U 4023、U 5023、U 5000 系列及未来新型号；
+- Baumuster；
+- 数量，特别检查多辆 Bestellung 是否仅收到单车 AB；
+- 单车 AB 对应哪一辆、车辆序号、VIN/FIN 是否存在；
+- Bestellung 和 AB 是否确实属于同一采购事项。
+
+### 2. 价格与计价基础
+
+- 币种；
+- 每辆单价；
+- 车辆基础价格；
+- 折扣；
+- 运输费；
+- 保险费；
+- 附加费用；
+- 净价和总价；
+- VAT 是否包含；
+- 单车价格与整批总价不得混淆；
+- 实际复算价格组成；
+- Bestellung 与 AB 是否处于相同的 Incoterms 和计价基础。
+
+如果 Bestellung 的总数量大于 AB 的确认数量，即使单价一致，也不得判定整单已确认。必须核对 AB 是整批确认、分车确认还是分批确认，并计算理论整批金额，同时注明该金额是否由 AB 实际确认。
+
+### 3. 交期
+
+- 订单日期；
+- AB 日期；
+- 要求交期；
+- 确认交期；
+- non-binding/unverbindlich 与 verbindlich 的区别；
+- Q1、Q2 等季度与 May 等具体月份的关系；
+- 必须先确认 AB 对应哪一辆，再判断月份与季度是否矛盾。
+
+通用示例：若 Bestellung 对不同车辆或批次规定不同季度，而 AB 只写某个具体月份，必须先确认该 AB 对应的车辆序号或批次。具体月份落在对应季度内时可判为“表述不同但可能兼容”；落在对应季度外时才判为“明确矛盾”。无论如何，unverbindlich 不能作为 verbindlich 承诺。
+
+### 4. 交货地点与条款
+
+- 国家目的地；
+- 实际交货地点；
+- 邮编和城市；
+- Incoterms 2020，例如 CIP；
+- 运输及保险责任；
+- 出口、进口和风险转移；
+- PDF 中实际出现的目的国、最终客户所在地、交货点和上装地点是否一致；不得预设 Romania、Kutina 或任何固定国家/城市；
+- 付款条件；
+- 信用额度前提；
+- 信用额度不足时是否要求交货前付款。
+
+### 5. Unimog 技术参数
+
+至少核对：
+
+- 任意 Unimog 型号及系列，包括但不限于 U 219、U 319、U 423、U 427、U 435、U 527、U 535、U 4023、U 5023、U 5000 系列；
+- 4x4；
+- Chassis variant；
+- Crew Cab/Closed steel cab；
+- Baumuster；
+- 轴距；
+- 发动机型号，不预设 OM934；按 PDF 实际内容核对 OM934、OM936 或其他发动机；
+- 功率、PS/HP、扭矩；
+- 变速箱；
+- 轴比；
+- 重量等级/GVW；
+- 轮胎尺寸；
+- 轮胎品牌及系列；
+- 每车轮胎数量与备胎；
+- CTIS 中央轮胎充放气系统；
+- PTO；
+- 制动系统；
+- 驾驶辅助系统；
+- GSR 阶段；
+- 涉水深度；
+- 低温包；
+- 颜色；
+- 文档语言；
+- 质保；
+- 防腐处理；
+- 影响后续上装的配置。
+- 排放标准、GSR/法规阶段和 homologation；
+- 驾驶室类型、座位数、安全带、后排座椅和 crew cab 改装范围；
+- 取力器位置、转速、扭矩和旋向；
+- 车架预留孔、横梁、尾横梁、拖钩和上装空间；
+- 发电机、电池、电压、CAN/FMS 接口和电气预留；
+- 燃油箱、AdBlue、排气系统位置及其对上装的影响；
+- 整车质量、前后轴载、允许总重及载荷分布；
+- 出厂状态、底盘防腐、运输保护、拆除件和随车附件。
+
+### 6. 左舵/右舵必须单独报告
+
+必须明确写出车辆是：
+
+- Linkslenker / 左舵；或
+- Rechtslenker / 右舵。
+
+必须同时核对 Bestellung 与 AB 是否一致。
+
+特别注意：
+
+- `Z01 Left hand drive` 表示左舵；
+- `Z5Y Vehicle, for right-side traffic` 表示适用于右侧通行；
+- `Rechtsverkehr` 不等于 `Rechtslenker`；
+- 不得把 right-side traffic 误判为右舵。
+
+## 四、配置 Code 完整核查
+
+1. 提取 Bestellung 和 AB 中全部显式配置 Code。
+2. 核对程序的全部 `OK`、`MISSING`、`REVIEW`、`IGNORED` 和 AB 中全部 `EXTRA`。
+3. 同 Code 不等于同配置。即使程序标为 OK，也必须检查：
+   - 描述；
+   - 数量；
+   - 规格；
+   - 品牌；
+   - 技术参数；
+   - `ohne`；
+   - `Entfall`；
+   - `Serie`；
+   - 否定词和限定词。
+4. `MISSING` 必须区分：
+   - AB 确实未记载；
+   - 可能使用其他 Code；
+   - OCR/提取失败；
+   - 无法确认。
+5. 疑似替代 Code、OCR 混淆或 J-Code 替代保持 REVIEW，除非 PDF 有明确等同依据。
+6. `IGNORED` 和 `EXTRA` 必须评估是否改变车辆配置、价格、工艺或双方约定。
+7. 必须检查无 Code 的正文是否与 EXTRA Code 可能相关，例如一方以自由文本记载防腐、轮胎、PTO、驾驶室或上装接口，另一方以 Code 表示。不得预设固定 Code，必须根据当次 PDF 判断是否等同。
+8. 必须检查 Optional equipment，包括无 Code 或仅出现在价格附件中的选装项目。不得把报价选项自动当成已订购，也不得因 AB 未出现就直接认定供应商漏项。
+9. 正文必须完整列出：
+   - 所有 MISSING；
+   - 所有 REVIEW；
+   - 所有 IGNORED；
+   - 所有 EXTRA；
+   - 程序标 OK 但人工发现仍有差异的 Code。
+10. 其余 OK Code 必须在报告附件或完整清单中逐项保留。
+
+## 五、程序盲点专项验证
+
+必须验证，而不是预设一定发生：
+
+1. HTML 是否遗漏 `extra_in_ab`；
+2. EXTRA 是否未影响总体状态；
+3. 原程序是否未比较数量；
+4. `compare_fields` 的字符串包含规则是否掩盖部分差异；
+5. 德式千位分隔金额与无千位分隔金额 是否被错误判为不同；
+6. 字段提取为空是否被错误写成 PDF 未记载；
+7. 交期正则是否无法理解季度、月份和车辆分配；
+8. 同 Code 描述相似度阈值是否掩盖品牌、数量、否定词或技术参数差异；
+9. 页眉页脚过滤、第一页起始位置、Code 截取范围和同一视觉行多 Code 是否造成遗漏；
+10. OCR 的 0/O/Q、1/I/L、5/S、8/B 混淆是否影响 Code。
+
+报告必须分别列出：
+
+- A. 本次已通过 PDF 和实际运行验证的问题；
+- B. 存在风险但本次未证实的问题；
+- C. 每个已验证问题对本次采购判断的实际影响。
+
+## 六、结论状态
+
+人工结论只能使用以下状态：
+
+- **明确矛盾**：双方对同一事项给出不能同时成立的内容；
+- **需供应商确认**：存在缺失、变更、歧义、单车分配不明或承诺效力不明；
+- **表述不同但可能兼容**：现有说法可能同时成立，但仍需解释；
+- **未找到/无法确认**：检查后仍无法可靠定位或辨认。
+
+保留程序原始状态，但不得以程序状态替代人工结论。没有充分证据时，不得宣称“订单完全一致”。
+
+## 七、直接交付
+
+直接在聊天中提供两份完整报告，先中文，后德语。两版的事实、数字、页码、状态、风险等级和结论必须一致。
+
+两版均包含：
+
+1. 总体结论及是否建议暂缓放行；
+2. 文件识别、页数及文字提取/OCR 可靠性；
+3. 关键字段逐项对照，附双方页码和简短原文；
+4. 左舵/右舵专项结论；
+5. 全部重要配置差异及 AB 新增 Code；
+6. 价格、交期、数量、地点、Incoterms、付款条件及其他条款；
+7. 程序结果与 PDF 人工复核结果的差别；
+8. 按优先级排序的供应商待确认事项；
+9. 自检发现的问题及剩余风险。
+
+同时创建以下可下载文件：
+
+- `AB_对比报告_ZH.md`
+- `AB_Vergleichsbericht_DE.md`
+- `Unimog_AB_Check_Result.json`
+- `Unimog_AB_Check_Codes.xlsx`
+
+报告文件内容必须与聊天报告一致。只有实际生成成功的文件才能声称已经生成。
+
+## 八、交付前自检
+
+交付前再次核对：
+
+- 数量；
+- 单价与总价；
+- 价格加总；
+- 日期；
+- Q1/Q2 与月份；
+- Code；
+- 页码；
+- 左舵/右舵；
+- 目的国、最终客户所在地、交货点和上装地点；
+- 中德文事实一致性；
+- 程序状态与人工结论是否被清楚区分。
+
+---
+
+# 内嵌 Python 代码
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+
+import argparse
+import difflib
+import json
+import re
+import sys
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+try:
+    import pdfplumber
+except ImportError:
+    raise SystemExit("缺少 pdfplumber，请运行: python -m pip install pdfplumber")
+
+try:
+    import pandas as pd
+except ImportError:
+    raise SystemExit("缺少 pandas/openpyxl，请运行: python -m pip install pandas openpyxl")
+
+CODE_RE = re.compile(r"^[A-Z][A-Z0-9]{1,5}$")
+STOP_CODES = {
+    "MOTOR", "SEITE", "DATUM", "EUR", "UND", "MIT", "FUER", "VOM",
+    "WERK", "HERR", "IHRE", "WIR", "LKW", "GMBH", "TYP", "MB",
+    "PS", "NM", "MM", "AG", "SITZ", "ORDER", "DATE", "PRICE"
+}
+
+@dataclass
+class CodeItem:
+    code: str
+    description: str
+    page: int
+    source: str
+    optional_ohne: bool = False
+
+@dataclass
+class CodeCheck:
+    code: str
+    bestellung_description: str
+    bestellung_page: int
+    status: str
+    ab_code: str = ""
+    ab_description: str = ""
+    ab_page: int = 0
+    similarity: float = 0.0
+    note_zh: str = ""
+    note_de: str = ""
+
+
+def clean(text: str) -> str:
+    return re.sub(r"\s+", " ", (text or "").replace("\xa0", " ").replace("­", "")).strip()
+
+
+def normalize_code(code: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", code.upper())
+
+
+def normalize_description(text: str) -> str:
+    value = clean(text).upper().replace("ß", "SS")
+    value = value.replace("UE", "U").replace("OE", "O").replace("AE", "A")
+    return re.sub(r"[^A-Z0-9 ]", "", value)
+
+
+def similarity(left: str, right: str) -> float:
+    return difflib.SequenceMatcher(
+        None, normalize_description(left), normalize_description(right)
+    ).ratio()
+
+
+def page_lines(page) -> list[str]:
+    words = page.extract_words(
+        x_tolerance=2,
+        y_tolerance=3,
+        keep_blank_chars=False
+    ) or []
+    rows = []
+    for word in sorted(words, key=lambda x: (x["top"], x["x0"])):
+        center_y = (word["top"] + word["bottom"]) / 2
+        row = next(
+            (r for r in reversed(rows[-6:]) if abs(r["y"] - center_y) <= 3.2),
+            None
+        )
+        if row is None:
+            row = {"y": center_y, "words": []}
+            rows.append(row)
+        row["words"].append(word)
+        row["y"] = sum(
+            (item["top"] + item["bottom"]) / 2 for item in row["words"]
+        ) / len(row["words"])
+    return [
+        clean(" ".join(item["text"] for item in sorted(row["words"], key=lambda x: x["x0"])))
+        for row in rows
+    ]
+
+
+def extract_pdf(pdf_file: Path) -> tuple[list[str], list[list[str]], list[dict]]:
+    page_texts = []
+    page_rows = []
+    quality = []
+    with pdfplumber.open(str(pdf_file)) as pdf:
+        for page_number, page in enumerate(pdf.pages, 1):
+            rows = page_lines(page)
+            text = "\n".join(rows)
+            page_rows.append(rows)
+            page_texts.append(text)
+            quality.append({
+                "page": page_number,
+                "characters": len(clean(text)),
+                "words": len(page.extract_words() or []),
+                "images": len(page.images or []),
+                "text_empty": not bool(clean(text)),
+            })
+    return page_texts, page_rows, quality
+
+
+def identify_document(page_texts: list[str]) -> tuple[str, list[str]]:
+    text = clean("\n".join(page_texts)).upper()
+    reasons = []
+    order_score = 0
+    ab_score = 0
+
+    for marker, score in [
+        ("ORDER FOR BRAND-NEW VEHICLES", 4),
+        ("ANNEX 1 TO THE PURCHASE ORDER", 3),
+        ("THE BUYER ORDERS", 2),
+        ("OBJECT OF SALE", 1),
+    ]:
+        if marker in text:
+            order_score += score
+            reasons.append(f"Bestellung marker: {marker}")
+
+    for marker, score in [
+        ("ORDER-CONFIRMATION", 4),
+        ("AUFTRAGSBESTÄTIGUNG", 4),
+        ("WE CONFIRM", 3),
+        ("YOUR ORDER", 1),
+        ("TOTAL PRICE", 1),
+    ]:
+        if marker in text:
+            ab_score += score
+            reasons.append(f"AB marker: {marker}")
+
+    if order_score >= 4 and order_score > ab_score:
+        return "Bestellung", reasons
+    if ab_score >= 4 and ab_score > order_score:
+        return "AB", reasons
+    return "Unclear", reasons
+
+
+def probable_code(token: str) -> bool:
+    token = normalize_code(token)
+    if not CODE_RE.fullmatch(token) or token in STOP_CODES:
+        return False
+    return any(char.isdigit() for char in token) or len(token) <= 4
+
+
+def extract_codes(page_rows: list[list[str]], source: str) -> dict[str, CodeItem]:
+    found = {}
+    for page_number, rows in enumerate(page_rows, 1):
+        for raw_line in rows:
+            line = clean(raw_line).lstrip("* ")
+            if not line:
+                continue
+            matches = list(re.finditer(
+                r"(?<![A-Z0-9])([A-Z][A-Z0-9]{1,5})\s+(?=[A-ZÄÖÜ0-9])",
+                line,
+                re.I
+            ))
+            valid = [match for match in matches if probable_code(match.group(1))]
+            for index, match in enumerate(valid):
+                code = normalize_code(match.group(1))
+                end = valid[index + 1].start() if index + 1 < len(valid) else len(line)
+                description = clean(line[match.end():end])
+                if len(description) < 2:
+                    continue
+                if any(marker in description.upper() for marker in [
+                    "REGISTERGERICHT", "IBAN", "UST-IDNR", "ALBERT-ZIEGLER-STR",
+                    "DAIMLER TRUCK AG SITZ", "BOARD OF MANAGEMENT"
+                ]):
+                    continue
+                item = CodeItem(
+                    code=code,
+                    description=description[:700],
+                    page=page_number,
+                    source=source,
+                    optional_ohne=bool(re.match(r"^(OHNE|ENTFALL)\b", description, re.I)),
+                )
+                if code not in found or len(description) > len(found[code].description):
+                    found[code] = item
+    return found
+
+
+def compare_codes(bestellung_codes, ab_codes):
+    checks = []
+    used_ab = set()
+
+    for code, bestellung_item in bestellung_codes.items():
+        if code in ab_codes:
+            ab_item = ab_codes[code]
+            used_ab.add(code)
+            score = similarity(bestellung_item.description, ab_item.description)
+            status = "OK" if score >= 0.45 else "REVIEW"
+            checks.append(CodeCheck(
+                code=code,
+                bestellung_description=bestellung_item.description,
+                bestellung_page=bestellung_item.page,
+                status=status,
+                ab_code=code,
+                ab_description=ab_item.description,
+                ab_page=ab_item.page,
+                similarity=score,
+                note_zh="同 Code，仍需人工检查品牌、数量、规格、否定词和技术参数。",
+                note_de="Gleicher Code; Marke, Menge, Spezifikation, Negation und technische Parameter manuell prüfen.",
+            ))
+        elif bestellung_item.optional_ohne:
+            checks.append(CodeCheck(
+                code=code,
+                bestellung_description=bestellung_item.description,
+                bestellung_page=bestellung_item.page,
+                status="IGNORED",
+                note_zh="Bestellung 描述为 Ohne/Entfall，仍需确认是否影响实际配置。",
+                note_de="Beschreibung enthält Ohne/Entfall; Auswirkung auf die reale Konfiguration prüfen.",
+            ))
+        else:
+            checks.append(CodeCheck(
+                code=code,
+                bestellung_description=bestellung_item.description,
+                bestellung_page=bestellung_item.page,
+                status="MISSING",
+                note_zh="Bestellung 中有此 Code，AB 中未按相同 Code 提取到。",
+                note_de="Code in der Bestellung vorhanden, in der AB nicht unter demselben Code extrahiert.",
+            ))
+
+    extras = [
+        item for code, item in ab_codes.items()
+        if code not in used_ab and code not in bestellung_codes
+    ]
+    return checks, extras
+
+
+def first_match(text: str, patterns: list[str]) -> str:
+    for pattern in patterns:
+        match = re.search(pattern, text, re.I | re.S)
+        if match:
+            return clean(match.group(1))
+    return ""
+
+
+def extract_fields(page_texts: list[str], source: str) -> dict[str, str]:
+    text = "\n".join(page_texts)
+    flat = clean(text)
+
+    common = {
+        "wheelbase": first_match(flat, [r"(?:WHEELBASE|RADSTAND)\s*:?[ ]*(\d+)\s*MM"]),
+        "power_kw": first_match(flat, [
+            r"ENGINE POWER\s*:?[ ]*(\d+)\s*KW",
+            r"M1K\s+ENGINE.*?\b(\d+)\s*KW",
+        ]),
+        "baumuster": first_match(flat, [
+            r"BAUMUSTER\s*:?[ ]*(\d{8})",
+            r"MOD\.\s*(\d{8})",
+            r"BM\s+(\d{8})",
+        ]),
+        "model": first_match(flat, [r"\b(U\s?\d{3,4})\b"]),
+        "steering": first_match(flat, [
+            r"STEERING TYPE\s*:?[ ]*([^\n]+)",
+            r"Z01\s+(LEFT HAND DRIVE|RIGHT HAND DRIVE)",
+        ]),
+        "traffic_side": first_match(flat, [r"Z5Y\s+(VEHICLE,?\s+FOR\s+RIGHT-SIDE\s+TRAFFIC)"]),
+        "currency": "EUR" if re.search(r"\bEUR\b", flat, re.I) else "",
+    }
+
+    if source == "Bestellung":
+        common.update({
+            "quantity": first_match(flat, [r"(\d+)\s*X\s+(?:MERCEDES-BENZ\s+)?UNIMOG"]),
+            "order_date": first_match(flat, [
+                r"ORDER\s+FOR\s+BRAND-NEW\s+VEHICLES\s+DATED\s+(\d{2}\.\d{2}\.\d{4})",
+                r"DATED\s+(\d{2}\.\d{2}\.\d{4})",
+            ]),
+            "unit_price": first_match(flat, [
+                r"PURCHASE PRICE PER UNIT.*?EUR\s*([\d.]+,\d{2})",
+                r"PURCHASE PRICE.*?IS\s*([\d.]+,\d{2})",
+            ]),
+            "delivery": first_match(flat, [
+                r"NON BINDING DELIVERY DATE FOR THE FIRST UNIT IS\s+(.+?)(?=NO LIABILITY|THE PURCHASE CONTRACT)",
+            ]),
+            "destination_country": first_match(flat, [
+                r"COUNTRY OF DESTINATION.*?IS\s+([A-Z][A-Z ]+?)(?:\.|PAYMENT)",
+            ]),
+            "delivery_place": first_match(flat, [
+                r"INCLUDING DELIVERY TO\s+([^,]+)",
+            ]),
+            "payment": first_match(flat, [
+                r"TERMS OF PAYMENT:\s*(.+)$",
+            ]),
+            "purchase_order_number": first_match(flat, [r"\b(4500\d+)\b"]),
+            "ab_number": "",
+        })
+    else:
+        common.update({
+            "quantity": first_match(flat, [r"YOUR ORDER:.*?\b(\d+)\s+MERCEDES(?:-BENZ)?\s+U\s?\d{3,4}"]),
+            "order_date": first_match(flat, [r"YOUR ORDER:\s*DATED\s*(\d{2}\.\d{2}\.\d{4})"]),
+            "unit_price": first_match(flat, [
+                r"TOTAL PRICE(?:\s+[A-Z]{3}(?:\s+[A-Z0-9 -]+)?)?\s+EUR\s+([\d. ]+,\d{2})",
+            ]).replace(" ", ""),
+            "vehicle_price": first_match(flat, [r"VEHICLE PRICE\s+([\d ]+,\d{2})"]).replace(" ", ""),
+            "transport": first_match(flat, [r"TRANSPORTATION CHARGES\s+([\d ]+,\d{2})"]).replace(" ", ""),
+            "insurance": first_match(flat, [r"INSURANCE\s+([\d ]+,\d{2})"]).replace(" ", ""),
+            "delivery": first_match(flat, [
+                r"NON-BINDING DELIVERY DATE\s+(.+?)(?=TERMS OF PAYMENT)",
+            ]),
+            "delivery_place": first_match(flat, [
+                r"TERMS OF DELIVERY:\s+(.+?)(?=$)",
+            ]),
+            "payment": first_match(flat, [
+                r"TERMS OF PAYMENT:\s+(.+?)(?=TERMS OF DELIVERY)",
+            ]),
+            "purchase_order_number": first_match(flat, [r"\b(4500\d+)\b"]),
+            "ab_number": first_match(flat, [
+                r"([0-9 ]{9,14})\s+ORDER NO\.",
+                r"ORDER NO\.\s*([0-9 ]{9,14})",
+            ]),
+        })
+    return common
+
+
+def normalized_number(value: str) -> str:
+    return re.sub(r"[ .]", "", value or "")
+
+
+def compare_fields(bestellung: dict, ab: dict) -> list[dict]:
+    keys = sorted(set(bestellung) | set(ab))
+    rows = []
+    for key in keys:
+        left = bestellung.get(key, "")
+        right = ab.get(key, "")
+        if key == "ab_number":
+            status = "INFO"
+        elif not left or not right:
+            status = "REVIEW"
+        elif normalized_number(left).casefold() == normalized_number(right).casefold():
+            status = "OK"
+        else:
+            status = "REVIEW"
+        rows.append({
+            "key": key,
+            "bestellung": left,
+            "ab": right,
+            "script_status": status,
+            "manual_review_required": True,
+        })
+    return rows
+
+
+def write_outputs(output_base: Path, payload: dict):
+    output_base.with_suffix(".json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+    code_rows = []
+    for item in payload["code_checks"]:
+        code_rows.append({
+            "Bestellung Code": item["code"],
+            "Bestellung Description": item["bestellung_description"],
+            "Bestellung Page": item["bestellung_page"],
+            "Script Status": item["status"],
+            "AB Code": item["ab_code"],
+            "AB Description": item["ab_description"],
+            "AB Page": item["ab_page"],
+            "Similarity": item["similarity"],
+            "说明": item["note_zh"],
+            "Hinweis": item["note_de"],
+        })
+
+    for item in payload["extra_in_ab"]:
+        code_rows.append({
+            "Bestellung Code": "",
+            "Bestellung Description": "",
+            "Bestellung Page": "",
+            "Script Status": "EXTRA",
+            "AB Code": item["code"],
+            "AB Description": item["description"],
+            "AB Page": item["page"],
+            "Similarity": "",
+            "说明": "AB 新增 Code，必须人工判断配置、价格和工艺影响。",
+            "Hinweis": "Zusätzlicher AB-Code; Auswirkung auf Konfiguration, Preis und Prozess manuell prüfen.",
+        })
+
+    xlsx = Path(str(output_base) + "_Codes.xlsx")
+    with pd.ExcelWriter(xlsx, engine="openpyxl") as writer:
+        pd.DataFrame(code_rows).to_excel(writer, index=False, sheet_name="Code Check")
+        pd.DataFrame(payload["field_checks"]).to_excel(writer, index=False, sheet_name="Key Fields")
+        pd.DataFrame(payload["bestellung_quality"]).to_excel(writer, index=False, sheet_name="Bestellung Pages")
+        pd.DataFrame(payload["ab_quality"]).to_excel(writer, index=False, sheet_name="AB Pages")
+
+        for sheet in writer.book.worksheets:
+            sheet.freeze_panes = "A2"
+            sheet.auto_filter.ref = sheet.dimensions
+            for column in sheet.columns:
+                width = min(max(len(str(cell.value or "")) for cell in column) + 2, 70)
+                sheet.column_dimensions[column[0].column_letter].width = width
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Universal Unimog Bestellung / AB checker")
+    parser.add_argument("pdf1", type=Path)
+    parser.add_argument("pdf2", type=Path)
+    parser.add_argument("-o", "--output", type=Path, default=Path("Unimog_AB_Check_Result"))
+    args = parser.parse_args()
+
+    for file in (args.pdf1, args.pdf2):
+        if not file.is_file():
+            parser.error(f"文件不存在: {file}")
+
+    pdf1_texts, pdf1_rows, pdf1_quality = extract_pdf(args.pdf1)
+    pdf2_texts, pdf2_rows, pdf2_quality = extract_pdf(args.pdf2)
+
+    pdf1_type, pdf1_reasons = identify_document(pdf1_texts)
+    pdf2_type, pdf2_reasons = identify_document(pdf2_texts)
+
+    if {pdf1_type, pdf2_type} != {"Bestellung", "AB"}:
+        raise RuntimeError(
+            "无法可靠识别两份 PDF 的类型。"
+            f" PDF1={pdf1_type}, PDF2={pdf2_type}。"
+            "不得强行交换输入，请人工检查标题和正文。"
+        )
+
+    if pdf1_type == "Bestellung":
+        bestellung_file, ab_file = args.pdf1, args.pdf2
+        bestellung_texts, ab_texts = pdf1_texts, pdf2_texts
+        bestellung_rows, ab_rows = pdf1_rows, pdf2_rows
+        bestellung_quality, ab_quality = pdf1_quality, pdf2_quality
+    else:
+        bestellung_file, ab_file = args.pdf2, args.pdf1
+        bestellung_texts, ab_texts = pdf2_texts, pdf1_texts
+        bestellung_rows, ab_rows = pdf2_rows, pdf1_rows
+        bestellung_quality, ab_quality = pdf2_quality, pdf1_quality
+
+    bestellung_codes = extract_codes(bestellung_rows, "Bestellung")
+    ab_codes = extract_codes(ab_rows, "AB")
+    code_checks, extras = compare_codes(bestellung_codes, ab_codes)
+
+    bestellung_fields = extract_fields(bestellung_texts, "Bestellung")
+    ab_fields = extract_fields(ab_texts, "AB")
+    field_checks = compare_fields(bestellung_fields, ab_fields)
+
+    counts = {
+        status: sum(check.status == status for check in code_checks)
+        for status in ("OK", "MISSING", "REVIEW", "IGNORED")
+    }
+    counts["EXTRA"] = len(extras)
+
+    quantity_review = (
+        bool(bestellung_fields.get("quantity"))
+        and bool(ab_fields.get("quantity"))
+        and bestellung_fields["quantity"] != ab_fields["quantity"]
+    )
+
+    payload = {
+        "bestellung_file": str(bestellung_file),
+        "ab_file": str(ab_file),
+        "identification": {
+            str(args.pdf1): {"type": pdf1_type, "reasons": pdf1_reasons},
+            str(args.pdf2): {"type": pdf2_type, "reasons": pdf2_reasons},
+        },
+        "bestellung_quality": bestellung_quality,
+        "ab_quality": ab_quality,
+        "counts": counts,
+        "quantity_review": quantity_review,
+        "bestellung_fields": bestellung_fields,
+        "ab_fields": ab_fields,
+        "field_checks": field_checks,
+        "code_checks": [asdict(item) for item in code_checks],
+        "extra_in_ab": [asdict(item) for item in extras],
+        "universal_scope": "不得复用历史项目的车型、数量、价格、Code、国家、地点或结论。",
+        "warning_zh": (
+            "程序输出仅为辅助证据。必须回到 PDF 原文人工复核数量、交期、品牌、"
+            "轮胎、左右舵、Optional equipment、无 Code 正文及所有 EXTRA。"
+        ),
+        "warning_de": (
+            "Die Programmausgabe ist nur ein Hilfsmittel. Menge, Liefertermin, Marke, Reifen, "
+            "Lenkungsseite, optionale Ausstattung, Text ohne Code und alle EXTRA-Einträge "
+            "müssen anhand der PDFs manuell geprüft werden."
+        ),
+    }
+
+    write_outputs(args.output, payload)
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+    needs_review = (
+        quantity_review
+        or counts["MISSING"] > 0
+        or counts["REVIEW"] > 0
+        or counts["EXTRA"] > 0
+        or any(row["script_status"] == "REVIEW" for row in field_checks)
+    )
+    return 2 if needs_review else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+## 九、程序运行示例
+
+识别文件类型后运行，不得仅按照文件名顺序假定：
+
+```bash
+python unimog_ab_checker.py "第一份PDF.pdf" "第二份PDF.pdf" -o Unimog_AB_Check_Result
+```
+
+程序返回码 2 代表存在需要人工复核的事项，不等于程序执行失败。必须继续完成人工 PDF 复核和中德文报告。
